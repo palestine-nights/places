@@ -61,7 +61,9 @@ type GooglePlacesStandartResponce struct {
 
 func GetRating(w http.ResponseWriter, r *http.Request) {
 	placeId := r.FormValue("placeid")
-	key := r.FormValue("key")
+	key := r.Header.Get("Authorization")
+
+	fmt.Printf("Authorization: %s\n", key)
 
 	link := GoogleApi + "?key=" + key + "&placeid=" + placeId
 
@@ -94,7 +96,7 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := ":8000"
 
-	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With", "Authorization"})
 	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
 	allowedMethods := handlers.AllowedMethods([]string{"GET"})
 
@@ -102,12 +104,9 @@ func main() {
 
 	ratingPath := router.Path("/")
 	ratingPath.HandlerFunc(GetRating).Methods("GET")
-	ratingPath.Queries(
-		"key", "{key}",
-		"placeid", "{placeid}",
-	)
+	ratingPath.Queries("placeid", "{placeid}")
 
-	log.Printf("Listening on localhost:" + port)
+	log.Printf("Listening on localhost" + port)
 
 	log.Fatal(
 		http.ListenAndServe(
