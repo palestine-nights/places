@@ -7,7 +7,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+)
+
+var (
+	index = 0
 )
 
 const (
@@ -58,14 +63,11 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 	placeId := r.FormValue("placeid")
 	key := r.FormValue("key")
 
-	fmt.Print(key)
-
 	link := GoogleApi + "?key=" + key + "&placeid=" + placeId
 
 	response, err := http.Get(link)
 
 	if err != nil {
-		fmt.Printf("%s", err)
 		w.WriteHeader(http.StatusInternalServerError)
 	} else {
 		data, _ := ioutil.ReadAll(response.Body)
@@ -79,6 +81,10 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 
 		response, _ := json.Marshal(ratingResult)
 
+		// Incerement counter.
+		index++
+		fmt.Printf("Counter: %d\n", index)
+
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(response)
@@ -86,14 +92,27 @@ func GetRating(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	port := ":8000"
+
+	allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	allowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	allowedMethods := handlers.AllowedMethods([]string{"GET"})
+
 	router := mux.NewRouter()
 
 	ratingPath := router.Path("/")
-	ratingPath.HandlerFunc(GetRating)
+	ratingPath.HandlerFunc(GetRating).Methods("GET")
 	ratingPath.Queries(
 		"key", "{key}",
 		"placeid", "{placeid}",
 	)
 
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Printf("Listening on localhost:" + port)
+
+	log.Fatal(
+		http.ListenAndServe(
+			port,
+			handlers.CORS(allowedHeaders, allowedOrigins, allowedMethods)(router),
+		),
+	)
 }
