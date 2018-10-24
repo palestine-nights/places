@@ -8,7 +8,7 @@ default: build run
 
 run:
 	@echo '> Starting "$(SERVICE)" container...'
-	@docker run --name $(SERVICE) -p 8000:8000 -d $(IMAGE)
+	@docker run --name $(SERVICE) -p 8080:8080 -d $(IMAGE)
 
 push: build
 	@echo '> Pushing "$(SERVICE)" docker image with version: "$(VERSION)"'
