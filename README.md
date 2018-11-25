@@ -4,7 +4,7 @@
 
 > Google Places Microservice.
 
-Created to avoid issue with CORS, which accures with axios in VueJS Apps.
+Created to avoid issue with CORS, which appears with axios in VueJS Apps.
 
 ## Development
 
